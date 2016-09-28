@@ -27,7 +27,7 @@ namespace Apple.Snooper
                     emailClient.Host = emailConfig.Smtp;
                     emailClient.Port = 587;
                     emailClient.EnableSsl = true;
-                    var message = string.Format(Constants.MensajeEmail, model, store);
+                    var message = string.Format(Constants.MensajeEmail, model);
                     var mailMessage = GetEmailMessage(emailConfig.From, emailConfig.Destinations, message);
                     mailMessage.BodyEncoding = Encoding.UTF8;
                     
@@ -46,7 +46,7 @@ namespace Apple.Snooper
         {
             var toList = tos.ToList();
 
-            var mailMessage = new MailMessage(from, from, "iPhone available", message);
+            var mailMessage = new MailMessage(from, from, "Device available", message);
             foreach (var to in toList)
             {
                 var ma = new MailAddress(to);

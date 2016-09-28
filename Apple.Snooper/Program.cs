@@ -21,15 +21,16 @@ namespace Apple.Snooper
             var location = ConfigurationManager.AppSettings["Location"];
 
             var httpclient = new AppleHttpClient(url);
-            
+            var finalEmail = "";
             foreach (var model in productModels)
             {
-                CheckProductAvailability(httpclient, model, emailFromArg, storeCode, location);
+                finalEmail += CheckProductAvailability(httpclient, model, storeCode, location);
             }
+            SendEmail(emailFromArg,finalEmail);
+            Console.ReadLine();
         }
 
-        private static void CheckProductAvailability(AppleHttpClient httpclient, string model, 
-            EmailConfig emailFromArg, string storeCode, string location)
+        private static string CheckProductAvailability(AppleHttpClient httpclient, string model, string storeCode, string location)
         {
             var jsonString = httpclient.CheckiPhoneAvailability(model, location).Result;
             var json = JsonConvert.DeserializeObject(jsonString) as JObject;
@@ -38,14 +39,14 @@ namespace Apple.Snooper
             {
                 Log.Error("Could not read the response data.");
                 Console.WriteLine("Could not read Request data.");
-                return;
+                return "";
             }
 
             var stores = json["body"]["stores"];
             if (stores == null)
             {
                 Log.Error("No stores found in the response json.");
-                return;
+                return "";
             }
 
             var ourStore = storeCode != string.Empty
@@ -55,31 +56,32 @@ namespace Apple.Snooper
             if (ourStore == null)
             {
                 Console.WriteLine("Store not found. ");
-                return;
+                return "";
             }
 
             var modelDescription = ourStore["partsAvailability"][model]["storePickupProductTitle"].ToString();
+            var storeName = ourStore["storeName"];
             var partsAvailabilityString = ourStore["partsAvailability"][model]["pickupSearchQuote"].ToString();
 
             if (partsAvailabilityString != Constants.MensajeNoDisponible)
             {
-                Log.Info($"iPhone {modelDescription} available.");
-                var emailResult =
-                    Mailer.Notify(emailFromArg, modelDescription, ourStore["storeName"].ToString()).Result;
-
-                if (emailResult) return;
-
-                Console.WriteLine("Error sending e-mail.");
-                Log.Error("Error sending e-mail.");
+                modelDescription += " en " + storeName + "\n";
+                Console.WriteLine(modelDescription);
+                Log.Info(modelDescription);
+                return modelDescription;
             }
             else
             {
                 // retry later?
                 Console.WriteLine($"iPhone {modelDescription} not available");
                 Log.Info($"iPhone {modelDescription} not available");
+                return "";
             }
         }
-
+        private static void SendEmail(EmailConfig emailFromArg, string modelDescription)
+        {
+            Mailer.Notify(emailFromArg, modelDescription, "");
+        }
         private static EmailConfig ReadConfig()
         {
             var emailServer = ConfigurationManager.AppSettings["SmtpServer"];
