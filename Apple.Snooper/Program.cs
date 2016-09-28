@@ -27,10 +27,6 @@ namespace Apple.Snooper
                 finalEmail += CheckProductAvailability(httpclient, model, storeCode, location);
             }
             SendEmail(emailFromArg,finalEmail);
-<<<<<<< HEAD
-=======
-            Console.ReadLine();
->>>>>>> 14343741db8ab28f2fcfe5f8ab54c4abd67f0391
         }
 
         private static string CheckProductAvailability(AppleHttpClient httpclient, string model, string storeCode, string location)
