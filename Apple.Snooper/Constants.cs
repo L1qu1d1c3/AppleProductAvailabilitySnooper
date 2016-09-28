@@ -10,6 +10,6 @@ namespace Apple.Snooper
 
         public const string MensajeNoDisponible = @"No disponible para recogida";
         
-        public const string MensajeEmail = "iPhone de modelo {0} disponible en {1}, run bitch!";
+        public const string MensajeEmail = "Dispositivo(s) disponible(s): \n{0}";
     }
 }
